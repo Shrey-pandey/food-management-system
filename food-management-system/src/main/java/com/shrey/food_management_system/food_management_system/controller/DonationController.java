@@ -2,8 +2,9 @@ package com.shrey.food_management_system.food_management_system.controller;
 
 import com.shrey.food_management_system.food_management_system.model.Donation;
 import com.shrey.food_management_system.food_management_system.service.DonationService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import com.shrey.food_management_system.food_management_system.dto.DonationResponseDTO;
 import java.util.List;
 
 @RestController
@@ -16,31 +17,36 @@ public class DonationController {
         this.donationService = donationService;
     }
 
-    // CREATE
+    // CREATE DONATION (Restaurant only)
+    @PreAuthorize("hasRole('RESTAURANT')")
     @PostMapping
-    public Donation addDonation(@RequestBody Donation donation) {
-        return donationService.addDonation(donation);
+    public String createDonation(@RequestBody Donation donation) {
+        donationService.addDonation(donation);
+        return "Donation created successfully";
     }
 
-    // READ ALL
+    // READ ALL DONATIONS (Admin + NGO)
+    @PreAuthorize("hasAnyRole('ADMIN', 'NGO')")
     @GetMapping
-    public List<Donation> getAllDonations() {
+    public List<DonationResponseDTO> getAllDonations() {
         return donationService.getAllDonations();
     }
-
     // READ BY ID
+    @PreAuthorize("hasAnyRole('ADMIN', 'NGO', 'RESTAURANT')")
     @GetMapping("/{id}")
     public Donation getDonationById(@PathVariable Long id) {
         return donationService.getDonationById(id);
     }
 
-    // SHOW ONLY LIVE DONATIONS
+    // SHOW ONLY PENDING DONATIONS
+    @PreAuthorize("hasAnyRole('ADMIN', 'NGO')")
     @GetMapping("/pending")
     public List<Donation> getPendingDonations() {
         return donationService.getPendingDonations();
     }
 
-    // UPDATE
+    // UPDATE DONATION
+    @PreAuthorize("hasRole('RESTAURANT')")
     @PutMapping("/{id}")
     public Donation updateDonation(
             @PathVariable Long id,
@@ -50,6 +56,7 @@ public class DonationController {
     }
 
     // NGO ACCEPTS DONATION
+    @PreAuthorize("hasRole('NGO')")
     @PutMapping("/{donationId}/accept/{ngoId}")
     public Donation acceptDonation(
             @PathVariable Long donationId,
@@ -58,7 +65,8 @@ public class DonationController {
         return donationService.acceptDonation(donationId, ngoId);
     }
 
-    // DELETE
+    // DELETE DONATION (Admin only)
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public String deleteDonation(@PathVariable Long id) {
         donationService.deleteDonation(id);

@@ -1,5 +1,5 @@
 package com.shrey.food_management_system.food_management_system.service;
-
+import com.shrey.food_management_system.food_management_system.dto.UserResponseDTO;
 import com.shrey.food_management_system.food_management_system.model.User;
 import com.shrey.food_management_system.food_management_system.repository.UserRepository;
 import com.shrey.food_management_system.food_management_system.util.JWTutil;
@@ -19,15 +19,41 @@ public class UserService {
     // REGISTER USER
     public User registerUser(User user) {
 
-        // default approval = false
+        // default approval false
         user.setApproved(false);
+
+        // fix role mapping
+        if (user.getRole().equalsIgnoreCase("RESTAURANT")) {
+            user.setRole("ROLE_RESTAURANT");
+        }
+        else if (user.getRole().equalsIgnoreCase("NGO")) {
+            user.setRole("ROLE_NGO");
+        }
+        else if (user.getRole().equalsIgnoreCase("ADMIN")) {
+            user.setRole("ROLE_ADMIN");
+        }
+        else {
+            throw new RuntimeException("Invalid role");
+        }
 
         return userRepository.save(user);
     }
-
     // GET ALL USERS
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> getAllUsers() {
+
+        List<User> users = userRepository.findAll();
+
+        return users.stream().map(user -> {
+            UserResponseDTO dto = new UserResponseDTO();
+
+            dto.setId(user.getId());
+            dto.setName(user.getName());
+            dto.setEmail(user.getEmail());
+            dto.setRole(user.getRole());
+            dto.setApproved(user.isApproved());
+
+            return dto;
+        }).toList();
     }
 
     // APPROVE USER (Admin action)

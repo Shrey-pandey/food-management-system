@@ -1,5 +1,6 @@
 package com.shrey.food_management_system.food_management_system.model;
-
+import com.shrey.food_management_system.food_management_system.model.User;
+import com.shrey.food_management_system.food_management_system.model.DonationStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,15 +24,15 @@ public class Donation {
 
     // donation status
     // Example: PENDING, ACCEPTED, PICKED_UP, DELIVERED
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private DonationStatus status;
 
     // Restaurant that created donation
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
-    private Restaurant restaurant;
+    private User restaurant;
 
-    // NGO that accepts donation
     @ManyToOne
     @JoinColumn(name = "ngo_id")
-    private Ngo ngo;
+    private User ngo;
 }

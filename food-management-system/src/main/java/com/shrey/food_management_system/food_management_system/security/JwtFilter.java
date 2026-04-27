@@ -1,20 +1,18 @@
 package com.shrey.food_management_system.food_management_system.security;
 
 import com.shrey.food_management_system.food_management_system.util.JWTutil;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -29,7 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         System.out.println("FILTER HIT: " + path);
 
-        // 🔥 MUST BE FIRST CHECK
+        // Public endpoints skip
         if (path.startsWith("/users/login") || path.equals("/users")) {
             System.out.println("SKIPPING JWT FILTER for: " + path);
             filterChain.doFilter(request, response);
@@ -52,6 +50,22 @@ public class JwtFilter extends OncePerRequestFilter {
             response.getWriter().write("Invalid token");
             return;
         }
+
+        // 🔥 THIS PART WAS MISSING
+
+        String email = JWTutil.extractEmail(token);
+        String role = JWTutil.extractRole(token);
+        System.out.println("EMAIL FROM TOKEN: " + email);
+        System.out.println("ROLE FROM TOKEN: " + role);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        email,
+                        null,
+                        List.of(new SimpleGrantedAuthority(role))
+                );
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }

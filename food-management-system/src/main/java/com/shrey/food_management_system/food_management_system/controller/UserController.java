@@ -6,7 +6,8 @@ import com.shrey.food_management_system.food_management_system.service.UserServi
 import org.springframework.web.bind.annotation.*;
 import com.shrey.food_management_system.food_management_system.dto.AuthResponse;
 import java.util.List;
-
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.shrey.food_management_system.food_management_system.dto.UserResponseDTO;
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -25,11 +26,12 @@ public class UserController {
 
     // GET ALL USERS
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserResponseDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
     // APPROVE USER (Admin action)
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/approve")
     public User approveUser(@PathVariable Long id) {
         return userService.approveUser(id);
@@ -39,4 +41,5 @@ public class UserController {
         System.out.println("LOGIN CONTROLLER HIT");
         return userService.loginUser(request.getEmail(), request.getPassword());
     }
+
 }
